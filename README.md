@@ -9,7 +9,7 @@ Invalid syntax. Valid is\
 !v `urlpart` `actions`\
 Page address is 'https://vk.com/' + `urlpart`, should be user or group page or 'search?...'. If the same as in previous command use, don't reload page (for dynamic pages)\
 `actions` is semicolon-separated list of build-in functions (use ' ' for str args) (by default funcs are marked __underline__)\
-If argument contains spaces, delimit it by " ". If argument should contain ", or \\ place \\ in front of them (\\\\", \\\\\\\\).\
+If argument contains spaces, delimit it by " ". If argument should contain ", or \\ place \\ in front of them (\\", \\\\).\
 **screenshot**/**s**(selector:str)\
 **text**/**t**(selector:str)\
 **translatedtext**/**a**(selector:str,target:str='en',source:str='auto')\
