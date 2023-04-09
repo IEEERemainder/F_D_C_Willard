@@ -1,5 +1,3 @@
-from CommandContext import CommandContext
-
 class Command:
     def __init__(self, method, nameOrNames, *constraints):
         self.method = method
@@ -8,5 +6,5 @@ class Command:
 
     async def __call__(self, ctx):
         for c in self.constraints:
-            c.check(msg)
+            c.check(ctx.msg)
         await self.method(ctx)

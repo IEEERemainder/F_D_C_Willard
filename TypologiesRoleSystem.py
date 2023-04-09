@@ -1,6 +1,6 @@
 from TypologyRole import *
-from SQLiteWrapper import *
-from Util import Util as u
+from core.SQLiteWrapper import *
+from core.Util import Util as u
 
 class TypologiesRoleSystem:
     def __init__(self):

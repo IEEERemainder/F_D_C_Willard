@@ -121,3 +121,24 @@ class Util:
         if ret := processMatches(matches, projector): return ret
 
     def isInDMChannel(m): return isinstance(m.channel, discord.channel.DMChannel)
+
+class KwgsHelper(dict):
+    def nz(self, key, defaultValue):
+        return self[key] if key in self else defaultValue
+
+class ConversionsIntermediary:
+    def __init__(self, t, ctx):
+        self.ctx = ctx
+        self.t = t
+
+    def i(self): return int(self.t)
+
+    def f(self): return float(self.t)
+
+    def user(self): return u.parseUser(self.t, self.ctx)
+
+    def role(self): return u.parseRole(self.t, self.ctx)
+
+    def channel(self): return u.parseChannel(self.t, self.ctx)
+
+    def a(self, fn=int, delimiter=','): return [fn(x) for x in self.t.split(delimiter)]

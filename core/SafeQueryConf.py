@@ -1,4 +1,4 @@
-from Util import Util as u
+from core.Util import Util as u
 
 class SafeQueryConf:
     def __init__(self, badOpCodes, allowedFuncs):

@@ -6,7 +6,7 @@ class OurException(Exception):
         self.log = logMessage != "NO_LOG"
         super().__init__()
 
-    def handleFeedback(self, msg):
+    async def handleFeedback(self, msg):
         if self.msg:
             await u.send(msg, self.msg)
         if self.reaction:
@@ -24,4 +24,5 @@ class InternalError(OurException):
 
 class MultipleMatchException(OurException):
     def __init__(self, a, fn):
-        super().__init__(f"More than one match found:\n{'\n'.join([fn(x) for x in a])}", "", "NO_LOG")
+        nl = '\n'
+        super().__init__(f"More than one match found:{nl + nl.join([fn(x) for x in a])}", "", "NO_LOG")

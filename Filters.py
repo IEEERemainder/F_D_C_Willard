@@ -1,5 +1,5 @@
 import re
-from Util import Util as u
+from core.Util import Util as u
 
 class ControlledMentionFilter:
     def __init__(self, clue, roleId):

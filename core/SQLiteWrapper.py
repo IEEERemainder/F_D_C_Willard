@@ -1,7 +1,7 @@
 import sqlite3
 import re
-from Errors import *
-from SafeQueryConf import *
+from core.Errors import *
+from core.SafeQueryConf import *
 
 safeQueryConfDefault = SafeQueryConf(
     ["Delete","Destroy","AutoCommit","DropIndex","DropTrigger","DropTable","Clear",

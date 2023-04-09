@@ -1,9 +1,10 @@
-import aiohttp, asyncio, datetime, discord, inspect, io, itertools, json, math, matplotlib.pyplot as plt, random, re, requests, sqlite3, textwrap, time, libretranslate
+import argparse, datetime, discord, inspect, io, itertools, json, math, matplotlib.pyplot as plt, random, re, requests, sqlite3, textwrap, time
+from libretranslate_py import libretranslate
 from ChromiumWrapperNew import ChromiumWrapperNew
-from Errors import *
-from SQLiteWrapper import SQLiteWrapper
+from core.Errors import *
+from core.SQLiteWrapper import SQLiteWrapper
 from TypesStorage import TypesStorage
-from Util import Util as u
+from core.Util import Util as u
 from sys import exc_info
 from traceback import format_exception
 from urllib import parse
@@ -177,9 +178,9 @@ class OnlyVkComUsersAndGroupsExceptSpecifiedGuard:
         return 0
 
     def checTrivial(self, q):
-        return str(q) in self.disallowIds 
-            or (re.match("^id\d+$",q) and q[2:] not in self.disallowIds) 
-            or re.match("^public\d+$",q) 
+        return str(q) in self.disallowIds \
+            or (re.match("^id\d+$",q) and q[2:] not in self.disallowIds) \
+            or re.match("^public\d+$",q) \
             or re.match("^club\d+$",q) 
 
     def checIfAlreadyBeenValidated(q):
@@ -212,7 +213,7 @@ class ChromiumCommand:
                 cey = signatureData[i][0]
                 value = p
             args[cey] = signatureData[i][1](value)
-        args = {**args, sd[0] : sd[1].strip("'") for sd in signatureData if sd[0] not in args} # add args those values was not supplied
+        args.extend({sd[0] : sd[1].strip("'") for sd in signatureData if sd[0] not in args}) # add args those values was not supplied
         return args
             
     def smartSplitByComma(self, t):
@@ -299,7 +300,7 @@ class ChromiumCommandsSession:
         async def screenshotFnLogic(self, el, state):
             if not await el.boundingBox():
                 state["invisible"] += 1
-                continue
+                return
             await el.screenshot({
                 "captureBeyondViewport":True,
                 "fromSurface":True, 
@@ -349,7 +350,7 @@ class ChromiumCommandsSession:
     async def translate(self, d, src, dst):
         return [await libretranslate.translate("http://localhost:5000", x, src, dst) for x in d]
         
-    async def htmlFn(args,sciplist,msg):
+    async def htmlFn(self, args):
         state = {"result": []}
 
         async def htmlFnLogic(self, el, state):
@@ -361,10 +362,10 @@ class ChromiumCommandsSession:
 
         await self.ctx.send("\n\n".join(state["result"]), wrap=args["width"])
 
-    async def removeFn(args,sciplist,msg):
+    async def removeFn(self, args):
         await chr.page.JJeval(args[0], '(nodes => nodes.map(el => el.parentElement.removeChild(el)))')
 
-    async def scrollFn(args,args):
+    async def scrollFn(self, args):
         await chr.exe("""
             function sleep_(ms) {
                 return new Promise(resolve => setTimeout(resolve, ms));
@@ -382,12 +383,12 @@ class ChromiumCommandsSession:
             ");"
         )
 
-    async def waitForSelectorFn(args,args):
+    async def waitForSelectorFn(self, args):
         await chr.page.waitForSelector(args['selector'])
 
     async def setviewpointFn(self, args):
         # do we need to execute it if page dont reload lol\
-        args["height"] = await chr.exe('Math.ceil(document.body.getBoundingClientRect().height)') if args["height"] == 'bodyHeight' 
+        args["height"] = await chr.exe('Math.ceil(document.body.getBoundingClientRect().height)') if args["height"] == 'bodyHeight' else args['height']
         await chr.page.setViewport(args)
 
     async def scipFn(self, args):
@@ -430,7 +431,7 @@ class ChromiumScheduler:
         self.lastQuery=''
         pass
 
-    def goto(self, url):
+    async def goto(self, url):
         if url == self.lastQuery: return
         await self.chr.goto(url)
         self.lastQuery = url
@@ -537,7 +538,7 @@ class ChromiumSupportCommandSystem:
 
     async def v(self, ctx):
         if ctx.argc == 1 and ctx[0].t == "help":
-            await ctx.send("\n".join([*lines, str(cmd) for cmd in self.commands]))
+            await ctx.send("\n".join([*lines, *(str(cmd) for cmd in self.commands)]))
             return
         if ctx.argc != 2:
             await ctx.send(f"Invalid syntax. Expected 2 args, got {ctx.argc}. Check `!v help`")
@@ -612,7 +613,61 @@ async def showRolesNotMatchesPattern(self, ctx):
 
 class ServerProfilesCommandSystem:
     def __init__(self):
-        pass
+        self.parser = argparse.ArgumentParser(
+            prog = '!p',
+            description = 'Implement server profiles system including role system unlimited to discord roles cap of 200 per default guild',
+            epilog = 'DVG, 2023. Conctact Interlocked#6505 for help'
+        )
+        self.parser.add_argument(
+            'property', 
+            help = "Property to work with"
+        )
+        self.parser.add_argument(
+            '-s', '--set',
+            dest = "setValue",
+            nargs = '*',
+            default = None, 
+            help = "Value to set to target's property"
+        )
+        self.parser.add_argument(
+            '-n', '--new',
+            dest = "newProp",
+            nargs = 0,
+            default = None, 
+            help = "Value to set to own's property"
+        )
+        self.parser.add_argument(
+            '-nmof', '--from-n-to-m-of',
+            dest = 'validatorOnSets',
+            nargs = 3,
+            metavar = ('min', 'max', 'csv'),
+            default = None,
+            help = "Validate property value by having at least n and at most m values from a values separated by comma"
+        )
+        self.parser.add_argument(
+            '-r', '--regex',
+            dest = 'validatorOnRegex',
+            default = None,
+            help = "Validate property value by matching a regex"
+        )
+        self.parser.add_argument(
+            '-rf', '--regex-flags',
+            dest = 'regexFlags',
+            default = None,
+            help = "Set a flags for regex used in --regex"
+        )
+        self.parser.add_argument(
+            '-pc', '--python-code',
+            dest = 'pythonValidator',
+            default = None,
+            help = "Set a flags for regex used in --regex"
+        )
+        self.parser.add_argument(
+            '-t', '--target', 
+            help = "User to access profile of",
+            default = "@me"
+        )
+
         
     async def profile(self, ctx):
         a = ctx.args

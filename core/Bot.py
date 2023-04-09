@@ -1,6 +1,8 @@
-from Util import Util as u
-from Errors import *
+from core.Util import Util as u
+from core.Errors import *
 import discord
+import config as cfg
+from core.CommandContext import *
 
 class Bot(discord.Client):
     def __init__(
@@ -25,7 +27,7 @@ class Bot(discord.Client):
         return False
         
     def log(self, text, msg, *a):
-        if not LOGGING_ENABLED: return
+        if not cfg.LOGGING_ENABLED: return
         isInDm = u.isInDMChannel(msg)
         print({
             "msg": text,
@@ -41,7 +43,7 @@ class Bot(discord.Client):
                 "c" : {
                     "id" : msg.channel.id,
                     "name" : msg.channel.name,
-                    "isDM" : isDm
+                    "isDM" : isInDm
                 },
                 "guild": {
                     "id" : msg.guild.id,
@@ -53,7 +55,7 @@ class Bot(discord.Client):
     async def on_message(self, msg):
         if msg.author == self.user: return
         if await self.handle_filters(msg): return
-        if not HANDLE_OTHER_BOTS_COMMANDS and msg.author.bot: return
+        if not cfg.HANDLE_OTHER_BOTS_COMMANDS and msg.author.bot: return
 
         text = msg.content
         prefix = u.scan(self.prefixes, lambda p: text.startswith(p) and text[len(p)] != " ")
@@ -70,9 +72,9 @@ class Bot(discord.Client):
 
         self.log("CORRECT_COMMAND_TYPED", msg)
         cmd = self.commandSystem[commandname]
-        ctx = CommandContext(msg, prefix, commandname, client, cmd)
+        ctx = CommandContext(msg, prefix, commandname, self, cmd)
         try:
-            await cmd(self, ctx)
+            await cmd(ctx)
 
         except OurException as aError:
             aError.handleFeedback(msg)

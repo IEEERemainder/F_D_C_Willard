@@ -1,0 +1,3 @@
+[submodule "libretranslate_py"]
+	path = libretranslate_py
+	url = https://github.com/IEEERemainder/libretranslate_py

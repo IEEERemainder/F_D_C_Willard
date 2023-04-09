@@ -1,4 +1,4 @@
-from Errors import AccessError
+from core.Errors import AccessError
 
 class Constraint:
     def __init__(
@@ -20,5 +20,4 @@ class Constraint:
         if self.extraFunc and self.extraFunc(msg): raise AccessError()
 
     def our_in(self, elem, l): 
-        return set(elem) & set(l) if isinstance(elem, list)
-            else elem in l
+        return set(elem) & set(l) if isinstance(elem, list) else elem in l            

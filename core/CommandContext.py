@@ -1,5 +1,6 @@
 import io
-from Util import Util as u
+from core.Util import Util as u
+from core.Util import *
 
 class CommandContext:
     def __init__(self, msg, prefix, cmd, client, commandObj):
@@ -9,14 +10,13 @@ class CommandContext:
         self.prefix=prefix
         self.cmdName=cmd
         self.client=client
-        self.command
         self.t = msg.content[len(prefix)+len(self.cmdName)+1:].strip() # prefix commandName space
         self.args=[]
         self.parseArgs()
         self.argc = len(self.args)
 
     async def send(self, what, **kwgs):
-        kwgs = __KwgsHelper(kwgs)
+        kwgs = KwgsHelper(kwgs)
         if isinstance(what, io.IOBase): # file
             await u.sendFile(self.msg, what, kwgs.nz('filename', 'unknown.bin'))
         elif isinstance(what, str):
@@ -44,24 +44,4 @@ class CommandContext:
 
 # more than 1 class in file?
 
-class ConversionsIntermediary:
-    def __init__(self, t, ctx):
-        self.ctx = ctx
-        self.t = t
 
-    def i(self): return int(self.t)
-
-    def f(self): return float(self.t)
-
-    def user(self): return u.parseUser(self.t, self.ctx)
-
-    def role(self): return u.parseRole(self.t, self.ctx)
-
-    def channel(self): return u.parseChannel(self.t, self.ctx)
-
-    def a(self, fn=int, delimiter=','): return [fn(x) for x in self.t.split(delimiter)]
-            
-class __KwgsHelper(dict):
-    def nz(self, key, defaultValue):
-        return self[key] if key in self 
-            else defaultValue

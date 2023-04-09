@@ -1,4 +1,4 @@
-from Util import Util as u
+from core.Util import Util as u
 
 class CommandSystem:
     def __init__(self, *cmds):
